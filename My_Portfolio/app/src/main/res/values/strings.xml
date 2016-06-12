@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">My App Portfolio</string>
+    <string name="app1">POPULAR MOVIES</string>
+    <string name="app2">STOCK HAWK</string>
+    <string name="app3">BUILD IT BIGGER</string>
+    <string name="app4">MAKE YOUR APP MATERIAL</string>
+    <string name="app5">GO UBIQUITOUS</string>
+    <string name="app6">CAPESTONE</string>
+</resources>
