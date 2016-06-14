@@ -21,76 +21,46 @@
             android:text="My Nanodegree Apps!"
             android:textSize="25sp" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app1"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app1" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app2"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app2" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app3"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app3" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app4"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app4" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app5"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app5" />
 
-        <android.support.v4.widget.Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_space" />
+        <android.support.v4.widget.Space style="@style/ButtonSpace" />
 
         <Button
             android:id="@+id/app6"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonBackground"
-            android:text="@string/app6"
-            android:textColor="@color/buttonForeground" />
+            style="@style/AppButton"
+            android:text="@string/app6" />
     </LinearLayout>
 </RelativeLayout>

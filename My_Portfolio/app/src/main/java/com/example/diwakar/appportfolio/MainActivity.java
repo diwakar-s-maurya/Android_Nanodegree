@@ -12,43 +12,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        View.OnClickListener l = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.app1:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                    case R.id.app2:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                    case R.id.app3:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                    case R.id.app4:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                    case R.id.app5:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                    case R.id.app6:
-                        showToast("This button will launch my " + getResources().getString(R.string.app1) + " app!");
-                        break;
-                }
-            }
-        };
-
-        ((Button) findViewById(R.id.app1)).setOnClickListener(l);
-        ((Button) findViewById(R.id.app2)).setOnClickListener(l);
-        ((Button) findViewById(R.id.app3)).setOnClickListener(l);
-        ((Button) findViewById(R.id.app4)).setOnClickListener(l);
-        ((Button) findViewById(R.id.app5)).setOnClickListener(l);
-        ((Button) findViewById(R.id.app6)).setOnClickListener(l);
-
     }
 
-    private void showToast(String text) {
-        Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+    public void showToast(View view) {
+        String text = "";
+        switch (view.getId()) {
+            case R.id.app1:
+                text = getResources().getString(R.string.app1);
+                break;
+            case R.id.app2:
+                text = getResources().getString(R.string.app2);
+                break;
+            case R.id.app3:
+                text = getResources().getString(R.string.app3);
+                break;
+            case R.id.app4:
+                text = getResources().getString(R.string.app4);
+                break;
+            case R.id.app5:
+                text = getResources().getString(R.string.app5);
+                break;
+            case R.id.app6:
+                text = getResources().getString(R.string.app6);
+                break;
+        }
+        Toast.makeText(MainActivity.this, "This button will launch my " + text + " app!", Toast.LENGTH_SHORT).show();
     }
 }
