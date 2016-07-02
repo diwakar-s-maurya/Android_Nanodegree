@@ -1,12 +1,17 @@
 package com.example.diwakar.sunshine;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -20,8 +25,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,12 +35,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String[] fakeData = {"Today-Sunny",
-                "Tomorrow-Windy"};
-        List<String> weekForecast = new ArrayList<>(Arrays.asList(fakeData));
-        arrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.list_item_textview, R.id.list_item_forecast_textview, weekForecast);
+        arrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.list_item_textview, R.id.list_item_forecast_textview, new ArrayList<String>());
         ListView v = (ListView) findViewById(R.id.listview_forecast);
         v.setAdapter(arrayAdapter);
+
+        v.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, DetailedActivity.class).putExtra(Intent.EXTRA_TEXT, arrayAdapter.getItem(position));
+                startActivity(intent);
+            }
+        });
 
     }
 
@@ -49,15 +57,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                Toast.makeText(getApplicationContext(), "Item 1 Selected", Toast.LENGTH_LONG).show();
-                (new fetchWeatherTask()).execute("delhi,in");
+                updateWeather();
+                return true;
+            case R.id.action_settings:
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                return true;
+            case R.id.action_view:
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+                Uri uri = Uri.parse("geo:0,0?q=").buildUpon().appendQueryParameter("q", location).build();
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                //intent.setPackage("com.google.android.apps.maps");
+                if(intent.resolveActivity(getPackageManager()) != null)
+                    startActivity(intent);
+                else
+                    Toast.makeText(MainActivity.this, "No map app found", Toast.LENGTH_SHORT).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void updateWeather() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        String units = prefs.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_metric));
+        (new fetchWeatherTask()).execute(location, units);
     }
 
     public class fetchWeatherTask extends AsyncTask<String, Void, String[]> {
@@ -81,8 +115,9 @@ public class MainActivity extends AppCompatActivity {
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
 
+            final String city = params[0];
             final String format = "json";
-            final String units = "metric";
+            final String units = params[1];
             final Integer numDays = 7;
 
             try {
@@ -91,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 // http://openweathermap.org/API#forecast
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendQueryParameter(QUERY_PARAM, params[0])
+                        .appendQueryParameter(QUERY_PARAM, city)
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
@@ -160,10 +195,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String[] data) {
-            arrayAdapter.clear();
-            for (String dayForecast : data) {
-                arrayAdapter.add(dayForecast);
+
+            if(data != null) {
+                arrayAdapter.clear();
+                for (String dayForecast : data) {
+                    arrayAdapter.add(dayForecast);
+                }
             }
+            else
+                Log.w(LOG_TAG, "null returned from server");
         }
     }
 }
