@@ -4,5 +4,14 @@
     <item
         android:id="@+id/action_refresh"
         android:title="@string/refresh"
-        app:showAsAction="always"/>
+        android:icon="@android:drawable/stat_notify_sync"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:title="@string/settings_acitvity_name" />
+    <item
+        android:id="@+id/action_view"
+        android:icon="@android:drawable/ic_dialog_map"
+        android:title="@string/view_location" />
 </menu>
