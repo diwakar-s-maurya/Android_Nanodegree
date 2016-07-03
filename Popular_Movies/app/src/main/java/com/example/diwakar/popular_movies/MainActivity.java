@@ -25,16 +25,41 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String LOG_TAG = MainActivity.class.getSimpleName();
-    private MovieParser movieParser = null;
     String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
     String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
+    private String LOG_TAG = MainActivity.class.getSimpleName();
+    private MovieParser movieParser = null;
     private Menu menu = null;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("movie_parser", movieParser);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        movieParser = savedInstanceState.getParcelable("movie_parser");
+        // Toast.makeText(MainActivity.this, "restored", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState != null)
+            movieParser = savedInstanceState.getParcelable("movie_parser");
+        //else
+        //Toast.makeText(MainActivity.this, "Create called", Toast.LENGTH_SHORT).show();
+
+        if (movieParser == null)
+            executeFetchMoviesTask();
+        else {
+            GridView gridView = (GridView) findViewById(R.id.grid_movies);
+            gridView.setAdapter(new ImageAdapter(MainActivity.this, movieParser));
+        }
 
         ((GridView) findViewById(R.id.grid_movies)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -57,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
-        if(sortBy == getString(R.string.pref_popular))
+        if (sortBy == getString(R.string.pref_popular))
             menu.findItem(R.id.sortBy_popular).setVisible(false);
         else
             menu.findItem(R.id.sortBy_top_rated).setVisible(false);
@@ -82,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-        editor.commit();
+        editor.apply();
         executeFetchMoviesTask();
         return true;
     }
@@ -91,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
         ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
         if (sortBy == getString(R.string.pref_popular)) {
             actionBar.setSubtitle("by popularity");
             (new FetchPopularMovies()).execute(POPULAR_MOVIES_URL);
@@ -98,12 +124,6 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setSubtitle("by rating");
             (new FetchPopularMovies()).execute(TOP_RATE_MOVIES_URL);
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        executeFetchMoviesTask();
     }
 
     private class FetchPopularMovies extends AsyncTask<String, Void, String> {
@@ -128,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 InputStream inputStream = urlConnection.getInputStream();
                 if (inputStream == null)
                     return null;
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line;
