@@ -1,10 +1,18 @@
 package com.example.diwakar.popular_movies;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -19,31 +27,97 @@ public class MainActivity extends AppCompatActivity {
 
     private String LOG_TAG = MainActivity.class.getSimpleName();
     private MovieParser movieParser = null;
+    String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
+    String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
+    private Menu menu = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ((GridView) findViewById(R.id.grid_movies)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("position", String.valueOf(position));
+                startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
+        if(sortBy == getString(R.string.pref_popular))
+            menu.findItem(R.id.sortBy_popular).setVisible(false);
+        else
+            menu.findItem(R.id.sortBy_top_rated).setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        SharedPreferences.Editor editor = prefs.edit();
+        item.setVisible(false);
+
+        switch (item.getItemId()) {
+            case R.id.sortBy_popular:
+                editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
+                menu.findItem(R.id.sortBy_top_rated).setVisible(true);
+                break;
+            case R.id.sortBy_top_rated:
+                editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_topRated));
+                menu.findItem(R.id.sortBy_popular).setVisible(true);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        editor.commit();
+        executeFetchMoviesTask();
+        return true;
+    }
+
+    private void executeFetchMoviesTask() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
+        ActionBar actionBar = getSupportActionBar();
+        if (sortBy == getString(R.string.pref_popular)) {
+            actionBar.setSubtitle("by popularity");
+            (new FetchPopularMovies()).execute(POPULAR_MOVIES_URL);
+        } else {
+            actionBar.setSubtitle("by rating");
+            (new FetchPopularMovies()).execute(TOP_RATE_MOVIES_URL);
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        (new FetchPopularMovies()).execute();
+        executeFetchMoviesTask();
     }
 
-    private class FetchPopularMovies extends AsyncTask<Void, Void, String> {
+    private class FetchPopularMovies extends AsyncTask<String, Void, String> {
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected String doInBackground(String... params) {
             String result = null;
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
-            String FORECAST_URL = "http://api.themoviedb.org/3/movie/popular";
+            String BASE_URL = params[0];
             String API_PARAM = "api_key";
 
-            Uri uri = Uri.parse(FORECAST_URL).buildUpon()
+            Uri uri = Uri.parse(BASE_URL).buildUpon()
                     .appendQueryParameter(API_PARAM, BuildConfig.THE_MOVIE_DB_API_KEY).build();
             try {
                 URL url = new URL(uri.toString());
