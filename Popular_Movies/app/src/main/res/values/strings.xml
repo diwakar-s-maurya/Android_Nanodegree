@@ -1,9 +1,21 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="label_detail">Movie Detail</string>
 
     <string name="title_sortBy_popular">Sort by popularity</string>
     <string name="title_sortBy_top_rated">Sort by ratings</string>
-    <string name="pref_sortBy_key">sortby</string>
-    <string name="pref_popular">popular</string>
-    <string name="pref_topRated">top_rated</string>
+    <string name="pref_sortBy_key" translatable="false">sortby</string>
+    <string name="pref_popular" translatable="false">popular</string>
+    <string name="pref_topRated" translatable="false">top_rated</string>
+
+
+    <string name="movie_name">movie_name</string>
+    <string name="release_date">Release Date</string>
+    <string name="vote_average">Vote Average</string>
+
+    <string name="action_mark_favorite">Mark favorite</string>
+    <string name="action_unmark_favorite">Unmark favorite</string>
+    <string name="title_trailers">Trailers</string>
+    <string name="title_reviews">Reviews</string>
+
 </resources>

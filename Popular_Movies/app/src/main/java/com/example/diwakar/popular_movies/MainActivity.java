@@ -65,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("position", String.valueOf(position));
+
+                MovieInfo movieInfo = movieParser.getMovieInfo(position);
+                intent.putExtra("movie_info", movieInfo);
                 startActivity(intent);
             }
         });

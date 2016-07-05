@@ -1,11 +1,23 @@
 package com.example.diwakar.popular_movies;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by diwakar on 7/3/16.
@@ -24,6 +36,7 @@ public class MovieParser implements Parcelable {
         }
     };
     private String jsonData = null;
+    private String BASE_URL_POSTER = "http://image.tmdb.org/t/p/w185/";
 
     public MovieParser(String jsonData) {
         this.jsonData = jsonData;
@@ -65,5 +78,37 @@ public class MovieParser implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(jsonData);
+    }
+
+    public MovieInfo getMovieInfo(int position) {
+        MovieInfo info = new MovieInfo();
+        try {
+            JSONObject data = new JSONObject(jsonData);
+            JSONArray results = data.getJSONArray("results");
+            JSONObject movieInfo = results.getJSONObject(position);
+
+            info.title = movieInfo.getString("title");
+            info.posterURL = BASE_URL_POSTER + movieInfo.getString("poster_path");
+            info.release_date = movieInfo.getString("release_date");
+            info.duration = String.valueOf(-1);
+            info.rating = movieInfo.getString("vote_average") + "/10";
+            info.plot = movieInfo.getString("overview");
+            info.ID = getMovieID(position);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return info;
+    }
+
+    public int getMovieID(int position) {
+        try {
+            JSONObject data = new JSONObject(jsonData);
+            JSONArray results = data.getJSONArray("results");
+            JSONObject movieInfo = results.getJSONObject(position);
+            return movieInfo.getInt("id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
