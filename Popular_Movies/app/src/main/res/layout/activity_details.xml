@@ -1,4 +1,5 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -10,10 +11,23 @@
         android:clipChildren="false"
         android:orientation="vertical">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/trailer_list"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/trailer_pager"
+                android:layout_width="match_parent"
+                android:layout_height="215dp"/>
+
+            <com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator
+                android:id="@+id/dot_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:selectedDotColor="@android:color/holo_red_dark"
+                app:selectedDotDiameter="10dp"
+                app:unselectedDotColor="@android:color/holo_red_dark" />
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -30,9 +44,9 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:gravity="center"
                 android:orientation="vertical"
-                android:paddingLeft="20dp"
-                android:gravity="center">
+                android:paddingLeft="20dp">
 
                 <TextView
                     android:id="@+id/movie_title"
@@ -51,13 +65,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center">
+
                 <ImageView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
 
@@ -65,32 +81,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingBottom="@dimen/movie_details_content_margin"
             android:paddingLeft="@dimen/movie_details_content_margin"
-            android:paddingRight="@dimen/movie_details_content_margin"
-            android:paddingBottom="@dimen/movie_details_content_margin">
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:color/darker_gray" />
+            android:paddingRight="@dimen/movie_details_content_margin">
 
-        <TextView
-            android:id="@+id/movie_synopsis"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/darker_gray" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:color/darker_gray" />
+            <TextView
+                android:id="@+id/movie_synopsis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/review_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/darker_gray" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/review_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

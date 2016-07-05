@@ -1,24 +1,24 @@
 package com.example.diwakar.popular_movies;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -40,7 +40,6 @@ import java.util.Set;
 public class DetailsActivity extends AppCompatActivity {
 
     private ReviewAdapter adapterReview;
-    private TrailerAdapter adapterTrailer;
     String movieID;
 
     @Override
@@ -58,22 +57,35 @@ public class DetailsActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.movie_rating)).setText(movieInfo.rating);
         ((TextView) findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
-        RecyclerView trailerRecycler = (RecyclerView) findViewById(R.id.trailer_list);
-        RecyclerView.LayoutManager trailerLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);
-        trailerRecycler.setLayoutManager(trailerLayoutManager);
-        adapterTrailer = new TrailerAdapter(new ArrayList<TrailerInfo>());
-        trailerRecycler.setItemAnimator(new DefaultItemAnimator());
-        trailerRecycler.setAdapter(adapterTrailer);
-        RecyclerItemClickSupport.addTo(trailerRecycler).setOnItemClickListener(new RecyclerItemClickSupport.OnItemClickListener() {
-            @Override
-            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                TrailerInfo info = ((TrailerAdapter) (recyclerView.getAdapter())).getData(position);
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(info.getYoutubeURL()));
+//        RecyclerView trailerRecycler = (RecyclerView) findViewById(R.id.trailer_list);
+//        RecyclerView.LayoutManager trailerLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);
+//        trailerRecycler.setLayoutManager(trailerLayoutManager);
+//        adapterTrailer = new TrailerAdapter(new ArrayList<TrailerInfo>());
+//        trailerRecycler.setItemAnimator(new DefaultItemAnimator());
+//        trailerRecycler.setAdapter(adapterTrailer);
+//        RecyclerItemClickSupport.addTo(trailerRecycler).setOnItemClickListener(new RecyclerItemClickSupport.OnItemClickListener() {
+//            @Override
+//            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+//
+//            }
+//        });
 
-                if (intent.resolveActivity(getPackageManager()) != null)
-                    startActivity(intent);
-                else
-                    Toast.makeText(DetailsActivity.this, "No app found to view trailer", Toast.LENGTH_SHORT).show();
+        ViewPager viewPager = (ViewPager)findViewById(R.id.trailer_pager);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                DotIndicator dotIndicator = (DotIndicator)findViewById(R.id.dot_indicator);
+                dotIndicator.setSelectedItem(position, true);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
             }
         });
 
@@ -84,7 +96,6 @@ public class DetailsActivity extends AppCompatActivity {
         reviewRecycler.setItemAnimator(new DefaultItemAnimator());
         reviewRecycler.setAdapter(adapterReview);
         reviewRecycler.setNestedScrollingEnabled(false);
-
 
         Toast.makeText(DetailsActivity.this, "created", Toast.LENGTH_SHORT).show();
 
@@ -268,9 +279,14 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<TrailerInfo> list) {
             super.onPostExecute(list);
-            adapterTrailer.addAll(list);
-            adapterTrailer.notifyDataSetChanged();
-            Log.v("Trailers: ", String.valueOf(list.size()));
+            ViewPager viewPager = (ViewPager)findViewById(R.id.trailer_pager);
+            TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(DetailsActivity.this, list);
+            viewPager.setAdapter(trailerPagerAdapter);
+            DotIndicator dotIndicator = (DotIndicator)findViewById(R.id.dot_indicator);
+            dotIndicator.setNumberOfItems(trailerPagerAdapter.getCount());
+            final int pageMargin = (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_DIP, 1, getResources() .getDisplayMetrics());
+            viewPager.setPageMargin(pageMargin);
+            //dotIndicator.setSelectedItem(0, true);
 
 //            ScrollView scrollView = (ScrollView)findViewById(R.id.scrollview_details);
 //            scrollView.fullScroll(ScrollView.FOCUS_UP);
