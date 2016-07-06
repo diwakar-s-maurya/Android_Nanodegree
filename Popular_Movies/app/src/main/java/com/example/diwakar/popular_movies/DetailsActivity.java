@@ -1,11 +1,14 @@
 package com.example.diwakar.popular_movies;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -22,6 +25,7 @@ import android.widget.Toast;
 
 import com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator;
 import com.squareup.picasso.Picasso;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,7 +53,7 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setSharedElementEnterTransition(TransitionInflater.from(DetailsActivity.this).inflateTransition(R.transition.shared_element_transition));
         }
 
@@ -65,7 +69,7 @@ public class DetailsActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
 
-        ViewPager viewPager = (ViewPager)findViewById(R.id.trailer_pager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.trailer_pager);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -74,7 +78,7 @@ public class DetailsActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                DotIndicator dotIndicator = (DotIndicator)findViewById(R.id.dot_indicator);
+                DotIndicator dotIndicator = (DotIndicator) findViewById(R.id.dot_indicator);
                 dotIndicator.setSelectedItem(position, true);
             }
 
@@ -91,6 +95,8 @@ public class DetailsActivity extends AppCompatActivity {
         reviewRecycler.setItemAnimator(new DefaultItemAnimator());
         reviewRecycler.setAdapter(adapterReview);
         reviewRecycler.setNestedScrollingEnabled(false);
+        //reviewRecycler.addItemDecoration(new RecyclerDivider(this));
+        reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
 
         Toast.makeText(DetailsActivity.this, "created", Toast.LENGTH_SHORT).show();
 
@@ -272,12 +278,12 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<TrailerInfo> list) {
             super.onPostExecute(list);
-            ViewPager viewPager = (ViewPager)findViewById(R.id.trailer_pager);
+            ViewPager viewPager = (ViewPager) findViewById(R.id.trailer_pager);
             TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(DetailsActivity.this, list);
             viewPager.setAdapter(trailerPagerAdapter);
-            DotIndicator dotIndicator = (DotIndicator)findViewById(R.id.dot_indicator);
+            DotIndicator dotIndicator = (DotIndicator) findViewById(R.id.dot_indicator);
             dotIndicator.setNumberOfItems(trailerPagerAdapter.getCount());
-            final int pageMargin = (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_DIP, 1, getResources() .getDisplayMetrics());
+            final int pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
             viewPager.setPageMargin(pageMargin);
             //dotIndicator.setSelectedItem(0, true);
 

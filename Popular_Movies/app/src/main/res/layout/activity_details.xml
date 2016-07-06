@@ -86,12 +86,7 @@
             android:paddingLeft="@dimen/movie_details_content_margin"
             android:paddingRight="@dimen/movie_details_content_margin">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/darker_gray" />
+            <View style="@style/horizontal_line" />
 
             <TextView
                 android:id="@+id/movie_synopsis"

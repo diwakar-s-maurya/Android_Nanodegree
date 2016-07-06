@@ -27,8 +27,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
-    compile "com.squareup.picasso:picasso:2.5.2"
+    compile "com.squareup.picasso:picasso:2.5.2" //for image loading and caching
     compile 'com.android.support:recyclerview-v7:23.2.1'
-    compile 'com.matthew-tamlin:sliding-intro-screen:3.0.1'
+    compile 'com.matthew-tamlin:sliding-intro-screen:3.0.1' //pager dots
+    compile 'com.yqritc:recyclerview-flexibledivider:1.4.0' //divider for recycler view
 
 }
