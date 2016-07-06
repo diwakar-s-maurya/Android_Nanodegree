@@ -1,5 +1,6 @@
 package com.example.diwakar.popular_movies;
 
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -23,6 +24,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.diwakar.provider.MovieProvider;
+import com.example.diwakar.provider.movie.MovieColumns;
+import com.example.diwakar.provider.movie.MovieContentValues;
+import com.example.diwakar.provider.movie.MovieCursor;
+import com.example.diwakar.provider.movie.MovieSelection;
 import com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator;
 import com.squareup.picasso.Picasso;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
@@ -138,10 +144,12 @@ public class DetailsActivity extends AppCompatActivity {
                     item.setIcon(R.drawable.favorite_red);
                     item.setTitle(getString(R.string.action_unmark_favorite));
                     set.add(movieID);
+                    saveMovie();
                 } else {
                     item.setIcon(R.drawable.favorite_white);
                     item.setTitle(getString(R.string.action_mark_favorite));
                     set.remove(movieID);
+                    unsaveMovie();
                 }
                 break;
             default:
@@ -152,6 +160,30 @@ public class DetailsActivity extends AppCompatActivity {
         editor.apply();
         return true;
     }
+
+    private void saveMovie() {
+        MovieInfo movieInfo = getIntent().getParcelableExtra("movie_info");
+
+        MovieContentValues values = new MovieContentValues();
+        values.putTitle(movieInfo.title);
+        values.putPosterurl(movieInfo.posterURL);
+        values.putReleaseDate(movieInfo.release_date);
+        values.putDurationNull();
+        values.putRating(movieInfo.rating);
+        values.putPlot(movieInfo.plot);
+        values.putMovieid(String.valueOf(movieInfo.ID));
+
+        values.insert(getApplicationContext());
+
+    }
+
+    private void unsaveMovie() {
+        MovieInfo info = getIntent().getParcelableExtra("movie_info");
+        MovieSelection where = new MovieSelection();
+        where.movieid(String.valueOf(info.ID));
+        where.delete(getContentResolver());
+    }
+
 
     public class FetchMovieReviewTask extends AsyncTask<String, Void, List<String>> {
         private String API_PARAM = "api_key";

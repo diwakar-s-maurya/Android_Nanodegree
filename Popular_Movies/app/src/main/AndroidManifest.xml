@@ -17,7 +17,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DetailsActivity" android:parentActivityName=".MainActivity" android:label="" android:theme="@style/DetailsTheme"></activity>
+        <activity
+            android:name=".DetailsActivity"
+            android:label=""
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/DetailsTheme" />
+        <!-- use this to auto generate content provider-->
+        <!-- https://github.com/BoD/android-contentprovider-generator -->
+        <provider
+            android:name="com.example.diwakar.provider.MovieProvider"
+            android:authorities="com.example.diwakar.popular_movies.provider"
+            android:exported="false" />
     </application>
 
 </manifest>
