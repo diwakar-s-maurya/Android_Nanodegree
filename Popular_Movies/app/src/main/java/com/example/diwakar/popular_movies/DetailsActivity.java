@@ -3,6 +3,7 @@ package com.example.diwakar.popular_movies;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
@@ -10,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -46,6 +48,11 @@ public class DetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setSharedElementEnterTransition(TransitionInflater.from(DetailsActivity.this).inflateTransition(R.transition.shared_element_transition));
+        }
+
         MovieInfo movieInfo = getIntent().getParcelableExtra("movie_info");
 
         ((TextView) findViewById(R.id.movie_title)).setText(movieInfo.title);
@@ -57,18 +64,6 @@ public class DetailsActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.movie_rating)).setText(movieInfo.rating);
         ((TextView) findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
-//        RecyclerView trailerRecycler = (RecyclerView) findViewById(R.id.trailer_list);
-//        RecyclerView.LayoutManager trailerLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);
-//        trailerRecycler.setLayoutManager(trailerLayoutManager);
-//        adapterTrailer = new TrailerAdapter(new ArrayList<TrailerInfo>());
-//        trailerRecycler.setItemAnimator(new DefaultItemAnimator());
-//        trailerRecycler.setAdapter(adapterTrailer);
-//        RecyclerItemClickSupport.addTo(trailerRecycler).setOnItemClickListener(new RecyclerItemClickSupport.OnItemClickListener() {
-//            @Override
-//            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-//
-//            }
-//        });
 
         ViewPager viewPager = (ViewPager)findViewById(R.id.trailer_pager);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -207,11 +202,9 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<String> list) {
             super.onPostExecute(list);
+            Log.v("Reviews: ", String.valueOf(list.size()));
             adapterReview.addAll(list);
             adapterReview.notifyDataSetChanged();
-
-//            ScrollView scrollView = (ScrollView)findViewById(R.id.scrollview_details);
-//            scrollView.fullScroll(ScrollView.FOCUS_UP);
         }
     }
 

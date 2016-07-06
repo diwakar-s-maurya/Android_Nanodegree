@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setSharedElementExitTransition(TransitionInflater.from(MainActivity.this).inflateTransition(R.transition.shared_element_transition));
+        }
+
+
         if (savedInstanceState != null)
             movieParser = savedInstanceState.getParcelable("movie_parser");
         //else
@@ -61,14 +69,27 @@ public class MainActivity extends AppCompatActivity {
             gridView.setAdapter(new ImageAdapter(MainActivity.this, movieParser));
         }
 
+        assert ((GridView) findViewById(R.id.grid_movies)) != null;
         ((GridView) findViewById(R.id.grid_movies)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-
                 MovieInfo movieInfo = movieParser.getMovieInfo(position);
                 intent.putExtra("movie_info", movieInfo);
-                startActivity(intent);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    view.setTransitionName("poster_transition");
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    ActivityOptionsCompat options = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        options = ActivityOptionsCompat.
+                                makeSceneTransitionAnimation(MainActivity.this, view, view.getTransitionName());
+                    }
+                    startActivity(intent, options.toBundle());
+                } else
+                    startActivity(intent);
             }
         });
     }
