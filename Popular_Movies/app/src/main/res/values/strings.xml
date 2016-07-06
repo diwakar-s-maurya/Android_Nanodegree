@@ -17,5 +17,6 @@
     <string name="action_unmark_favorite">Unmark favorite</string>
     <string name="title_trailers">Trailers</string>
     <string name="title_reviews">Reviews</string>
+    <string name="show_saved_movies">Show saved movies</string>
 
 </resources>

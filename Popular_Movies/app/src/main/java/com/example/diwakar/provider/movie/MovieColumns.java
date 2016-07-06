@@ -4,7 +4,6 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import com.example.diwakar.provider.MovieProvider;
-import com.example.diwakar.provider.movie.MovieColumns;
 
 /**
  * Columns for the {@code movie} table.

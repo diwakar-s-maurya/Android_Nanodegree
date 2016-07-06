@@ -116,19 +116,22 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         SharedPreferences.Editor editor = prefs.edit();
-        item.setVisible(false);
 
         switch (item.getItemId()) {
             case R.id.sortBy_popular:
                 editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
                 menu.findItem(R.id.sortBy_top_rated).setVisible(true);
+                menu.findItem(R.id.sortBy_popular).setVisible(false);
                 break;
             case R.id.sortBy_top_rated:
                 editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_topRated));
                 menu.findItem(R.id.sortBy_popular).setVisible(true);
+                menu.findItem(R.id.sortBy_top_rated).setVisible(false);
                 break;
-            default:
-                return super.onOptionsItemSelected(item);
+            case R.id.show_saved_movies:
+                Intent intent = new Intent(MainActivity.this, FavoriteMoviesActivity.class);
+                startActivity(intent);
+                break;
         }
         editor.apply();
         executeFetchMoviesTask();

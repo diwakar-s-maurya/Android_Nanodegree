@@ -1,9 +1,6 @@
 package com.example.diwakar.provider.movie;
 
-import java.util.Date;
-
 import android.database.Cursor;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.example.diwakar.provider.base.AbstractCursor;

@@ -3,9 +3,6 @@ package com.example.diwakar.popular_movies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by diwakar on 7/4/16.
  */

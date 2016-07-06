@@ -1,11 +1,8 @@
 package com.example.diwakar.provider.movie;
 
-import com.example.diwakar.provider.base.BaseModel;
-
-import java.util.Date;
-
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import com.example.diwakar.provider.base.BaseModel;
 
 /**
  * Data model for the {@code movie} table.

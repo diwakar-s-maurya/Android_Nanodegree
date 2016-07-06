@@ -1,18 +1,17 @@
 package com.example.diwakar.provider;
 
-import java.util.Arrays;
-
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.diwakar.popular_movies.BuildConfig;
 import com.example.diwakar.provider.base.BaseContentProvider;
 import com.example.diwakar.provider.movie.MovieColumns;
+
+import java.util.Arrays;
 
 public class MovieProvider extends BaseContentProvider {
     private static final String TAG = MovieProvider.class.getSimpleName();

@@ -20,14 +20,17 @@
         <activity
             android:name=".DetailsActivity"
             android:label=""
-            android:parentActivityName=".MainActivity"
             android:theme="@style/DetailsTheme" />
-        <!-- use this to auto generate content provider-->
+        <!-- use this to auto generate content provider -->
         <!-- https://github.com/BoD/android-contentprovider-generator -->
         <provider
             android:name="com.example.diwakar.provider.MovieProvider"
             android:authorities="com.example.diwakar.popular_movies.provider"
             android:exported="false" />
+
+        <activity
+            android:name=".FavoriteMoviesActivity"
+            android:parentActivityName=".MainActivity"></activity>
     </application>
 
 </manifest>

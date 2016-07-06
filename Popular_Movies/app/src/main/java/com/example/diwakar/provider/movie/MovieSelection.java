@@ -1,9 +1,7 @@
 package com.example.diwakar.provider.movie;
 
-import java.util.Date;
-
-import android.content.Context;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 

@@ -2,7 +2,6 @@ package com.example.diwakar.provider;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-
 import android.util.Log;
 
 import com.example.diwakar.popular_movies.BuildConfig;

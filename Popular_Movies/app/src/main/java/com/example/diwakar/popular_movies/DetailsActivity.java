@@ -1,33 +1,27 @@
 package com.example.diwakar.popular_movies;
 
-import android.content.ContentValues;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.transition.TransitionInflater;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.diwakar.provider.MovieProvider;
-import com.example.diwakar.provider.movie.MovieColumns;
 import com.example.diwakar.provider.movie.MovieContentValues;
-import com.example.diwakar.provider.movie.MovieCursor;
 import com.example.diwakar.provider.movie.MovieSelection;
 import com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator;
 import com.squareup.picasso.Picasso;
@@ -38,6 +32,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -104,8 +101,6 @@ public class DetailsActivity extends AppCompatActivity {
         //reviewRecycler.addItemDecoration(new RecyclerDivider(this));
         reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
 
-        Toast.makeText(DetailsActivity.this, "created", Toast.LENGTH_SHORT).show();
-
         movieID = String.valueOf(movieInfo.ID);
         (new FetchMovieReviewTask()).execute(movieID);
         (new FetchMovieTrailerTask()).execute(movieID);
@@ -166,22 +161,42 @@ public class DetailsActivity extends AppCompatActivity {
 
         MovieContentValues values = new MovieContentValues();
         values.putTitle(movieInfo.title);
-        values.putPosterurl(movieInfo.posterURL);
         values.putReleaseDate(movieInfo.release_date);
         values.putDurationNull();
         values.putRating(movieInfo.rating);
         values.putPlot(movieInfo.plot);
         values.putMovieid(String.valueOf(movieInfo.ID));
 
+        ImageView posterView = (ImageView) findViewById(R.id.movie_poster);
+        Bitmap bitmap = ((BitmapDrawable) posterView.getDrawable()).getBitmap();
+
+        try {
+            String path = getFilesDir() + movieID;
+            File file = new File(path);
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            values.putPosterurl("file:" + path); //this needs to be done to load image file using picasso
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         values.insert(getApplicationContext());
+
 
     }
 
     private void unsaveMovie() {
         MovieInfo info = getIntent().getParcelableExtra("movie_info");
         MovieSelection where = new MovieSelection();
-        where.movieid(String.valueOf(info.ID));
+        where.movieid(movieID);
         where.delete(getContentResolver());
+        File file = new File(getFilesDir() + movieID);
+        file.delete();
+        //// TODO: 7/6/16 to check is delete working
     }
 
 
@@ -240,9 +255,10 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<String> list) {
             super.onPostExecute(list);
-            Log.v("Reviews: ", String.valueOf(list.size()));
-            adapterReview.addAll(list);
-            adapterReview.notifyDataSetChanged();
+            if (list != null) {
+                adapterReview.addAll(list);
+                adapterReview.notifyDataSetChanged();
+            }
         }
     }
 
@@ -310,6 +326,8 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<TrailerInfo> list) {
             super.onPostExecute(list);
+            if (list == null)
+                return;
             ViewPager viewPager = (ViewPager) findViewById(R.id.trailer_pager);
             TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(DetailsActivity.this, list);
             viewPager.setAdapter(trailerPagerAdapter);
@@ -317,10 +335,6 @@ public class DetailsActivity extends AppCompatActivity {
             dotIndicator.setNumberOfItems(trailerPagerAdapter.getCount());
             final int pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
             viewPager.setPageMargin(pageMargin);
-            //dotIndicator.setSelectedItem(0, true);
-
-//            ScrollView scrollView = (ScrollView)findViewById(R.id.scrollview_details);
-//            scrollView.fullScroll(ScrollView.FOCUS_UP);
         }
     }
 }
