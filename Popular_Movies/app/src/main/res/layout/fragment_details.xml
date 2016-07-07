@@ -11,6 +11,7 @@
         android:clipChildren="false"
         android:orientation="vertical">
 
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -18,7 +19,7 @@
             <android.support.v4.view.ViewPager
                 android:id="@+id/trailer_pager"
                 android:layout_width="match_parent"
-                android:layout_height="215dp" />
+                android:layout_height="200dp" />
 
             <com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator
                 android:id="@+id/dot_indicator"
@@ -38,7 +39,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="200dp"
                 android:layout_marginTop="-20dp"
-                android:adjustViewBounds="true"
                 android:paddingLeft="20dp"
                 android:transitionName="poster_transition" />
 
@@ -64,16 +64,6 @@
                 <TextView
                     android:id="@+id/movie_rating"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>

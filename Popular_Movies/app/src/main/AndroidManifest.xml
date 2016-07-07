@@ -17,10 +17,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".DetailsActivity"
-            android:label=""
-            android:theme="@style/DetailsTheme" />
         <!-- use this to auto generate content provider -->
         <!-- https://github.com/BoD/android-contentprovider-generator -->
         <provider
@@ -28,9 +24,6 @@
             android:authorities="com.example.diwakar.popular_movies.provider"
             android:exported="false" />
 
-        <activity
-            android:name=".FavoriteMoviesActivity"
-            android:parentActivityName=".MainActivity"></activity>
     </application>
 
 </manifest>

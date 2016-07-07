@@ -48,7 +48,7 @@ public class FavoriteMoviesActivity extends AppCompatActivity {
             @Override
             public void onItemClicked(RecyclerView recyclerView, int position, View view) {
                 MovieInfo info = ((FavoriteAdapter) recyclerView.getAdapter()).get(position);
-                Intent intent = new Intent(FavoriteMoviesActivity.this, DetailsActivity.class);
+                Intent intent = new Intent(FavoriteMoviesActivity.this, FragmentDetails.class);
 
                 intent.putExtra("movie_info", info);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

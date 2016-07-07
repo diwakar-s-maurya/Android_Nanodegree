@@ -9,15 +9,19 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.transition.TransitionInflater;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,33 +50,34 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DetailsActivity extends AppCompatActivity {
+public class FragmentDetails extends Fragment {
 
     private ReviewAdapter adapterReview;
     String movieID;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+        final View view = inflater.inflate(R.layout.fragment_details, container, false);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setSharedElementEnterTransition(TransitionInflater.from(DetailsActivity.this).inflateTransition(R.transition.shared_element_transition));
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            getActivity().getWindow().setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.shared_element_transition));
+//        }
 
-        MovieInfo movieInfo = getIntent().getParcelableExtra("movie_info");
+        MovieInfo movieInfo = getArguments().getParcelable("movie_info");
 
-        ((TextView) findViewById(R.id.movie_title)).setText(movieInfo.title);
-        ImageView posterView = (ImageView) findViewById(R.id.movie_poster);
-        Picasso.with(this).load(movieInfo.posterURL).into(posterView);
+        ((TextView) view.findViewById(R.id.movie_title)).setText(movieInfo.title);
+        ImageView posterView = (ImageView) view.findViewById(R.id.movie_poster);
+        Picasso.with(getContext()).load(movieInfo.posterURL).into(posterView);
         posterView.setAdjustViewBounds(true);
-        ((TextView) findViewById(R.id.movie_release_date)).setText(movieInfo.release_date);
+        ((TextView) view.findViewById(R.id.movie_release_date)).setText(movieInfo.release_date);
 //        //((TextView) findViewById(R.id.movie_duration)).setText(getMovieInfo.duration);
-        ((TextView) findViewById(R.id.movie_rating)).setText(movieInfo.rating);
-        ((TextView) findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
+        ((TextView) view.findViewById(R.id.movie_rating)).setText(movieInfo.rating);
+        ((TextView) view.findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.trailer_pager);
+        ViewPager viewPager = (ViewPager) view.findViewById(R.id.trailer_pager);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -81,7 +86,7 @@ public class DetailsActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                DotIndicator dotIndicator = (DotIndicator) findViewById(R.id.dot_indicator);
+                DotIndicator dotIndicator = (DotIndicator) view.findViewById(R.id.dot_indicator);
                 dotIndicator.setSelectedItem(position, true);
             }
 
@@ -91,32 +96,32 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
 
-        RecyclerView reviewRecycler = (RecyclerView) findViewById(R.id.review_list);
-        RecyclerView.LayoutManager reviewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+        RecyclerView reviewRecycler = (RecyclerView) view.findViewById(R.id.review_list);
+        RecyclerView.LayoutManager reviewLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
         reviewRecycler.setLayoutManager(reviewLayoutManager);
         adapterReview = new ReviewAdapter(new ArrayList<String>());
         reviewRecycler.setItemAnimator(new DefaultItemAnimator());
         reviewRecycler.setAdapter(adapterReview);
         reviewRecycler.setNestedScrollingEnabled(false);
         //reviewRecycler.addItemDecoration(new RecyclerDivider(this));
-        reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
+        reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
 
         movieID = String.valueOf(movieInfo.ID);
         (new FetchMovieReviewTask()).execute(movieID);
         (new FetchMovieTrailerTask()).execute(movieID);
-
+        return view;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.detail, menu);
-        return super.onCreateOptionsMenu(menu);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(Menu menu) {
         MenuItem menuItem = menu.findItem(R.id.action_favorite);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DetailsActivity.this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
         boolean foundThisMovie = set.contains(movieID);
         if (foundThisMovie) {
@@ -126,12 +131,11 @@ public class DetailsActivity extends AppCompatActivity {
             menuItem.setIcon(R.drawable.favorite_white);
             menuItem.setTitle(getString(R.string.action_mark_favorite));
         }
-        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DetailsActivity.this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
         switch (item.getItemId()) {
             case R.id.action_favorite:
@@ -157,7 +161,7 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     private void saveMovie() {
-        MovieInfo movieInfo = getIntent().getParcelableExtra("movie_info");
+        MovieInfo movieInfo = getArguments().getParcelable("movie_info");
 
         MovieContentValues values = new MovieContentValues();
         values.putTitle(movieInfo.title);
@@ -167,11 +171,11 @@ public class DetailsActivity extends AppCompatActivity {
         values.putPlot(movieInfo.plot);
         values.putMovieid(String.valueOf(movieInfo.ID));
 
-        ImageView posterView = (ImageView) findViewById(R.id.movie_poster);
+        ImageView posterView = (ImageView) getView().findViewById(R.id.movie_poster);
         Bitmap bitmap = ((BitmapDrawable) posterView.getDrawable()).getBitmap();
 
         try {
-            String path = getFilesDir() + movieID;
+            String path = getContext().getFilesDir() + movieID;
             File file = new File(path);
             FileOutputStream fos = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
@@ -184,17 +188,17 @@ public class DetailsActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        values.insert(getApplicationContext());
+        values.insert(getContext());
 
 
     }
 
     private void unsaveMovie() {
-        MovieInfo info = getIntent().getParcelableExtra("movie_info");
+        MovieInfo info = getArguments().getParcelable("movie_info");
         MovieSelection where = new MovieSelection();
         where.movieid(movieID);
-        where.delete(getContentResolver());
-        File file = new File(getFilesDir() + movieID);
+        where.delete(getContext());
+        File file = new File(getContext().getFilesDir() + movieID);
         file.delete();
         //// TODO: 7/6/16 to check is delete working
     }
@@ -302,7 +306,7 @@ public class DetailsActivity extends AppCompatActivity {
                     JSONObject review = results.getJSONObject(i);
                     String site = review.getString("site");
 
-                    if (site.equals("YouTube") == true) {
+                    if (site.equals("YouTube")) {
                         String key = review.getString("key");
                         String title = review.getString("name");
 
@@ -328,13 +332,16 @@ public class DetailsActivity extends AppCompatActivity {
             super.onPostExecute(list);
             if (list == null)
                 return;
-            ViewPager viewPager = (ViewPager) findViewById(R.id.trailer_pager);
-            TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(DetailsActivity.this, list);
-            viewPager.setAdapter(trailerPagerAdapter);
-            DotIndicator dotIndicator = (DotIndicator) findViewById(R.id.dot_indicator);
-            dotIndicator.setNumberOfItems(trailerPagerAdapter.getCount());
-            final int pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
-            viewPager.setPageMargin(pageMargin);
+
+            if(getView() != null) { //if the fragment is deleted before reaching this onpost, then view will be null
+                ViewPager viewPager = (ViewPager) getView().findViewById(R.id.trailer_pager);
+                TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(getContext(), list);
+                viewPager.setAdapter(trailerPagerAdapter);
+                DotIndicator dotIndicator = (DotIndicator) getView().findViewById(R.id.dot_indicator);
+                dotIndicator.setNumberOfItems(trailerPagerAdapter.getCount());
+                final int pageMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics());
+                viewPager.setPageMargin(pageMargin);
+            }
         }
     }
 }
