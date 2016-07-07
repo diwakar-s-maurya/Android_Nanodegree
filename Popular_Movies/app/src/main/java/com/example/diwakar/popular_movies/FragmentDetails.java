@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -14,7 +13,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.transition.TransitionInflater;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -333,8 +331,8 @@ public class FragmentDetails extends Fragment {
             if (list == null)
                 return;
 
-            if(getView() != null) { //if the fragment is deleted before reaching this onpost, then view will be null
-                ViewPager viewPager = (ViewPager) getView().findViewById(R.id.trailer_pager);
+            if (getView() != null) { //if the fragment is deleted before reaching this onpost, then view will be null
+                TrailerViewPager viewPager = (TrailerViewPager) getView().findViewById(R.id.trailer_pager);
                 TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(getContext(), list);
                 viewPager.setAdapter(trailerPagerAdapter);
                 DotIndicator dotIndicator = (DotIndicator) getView().findViewById(R.id.dot_indicator);
