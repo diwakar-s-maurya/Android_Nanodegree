@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.diwakar.provider.movie.MovieContentValues;
 import com.example.diwakar.provider.movie.MovieSelection;
@@ -79,6 +80,20 @@ public class FragmentDetails extends Fragment {
         onFavUnFavButtonClick favUnfavListener = new onFavUnFavButtonClick();
         favImage.setOnClickListener(favUnfavListener);
         unfavImage.setOnClickListener(favUnfavListener);
+        favImage.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(getContext(), "Marked Favorite", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+        unfavImage.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(getContext(), "Not marked favorite", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
@@ -298,6 +313,8 @@ public class FragmentDetails extends Fragment {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putStringSet("favorites", set);
             editor.apply();
+
+            ((MainActivity)getActivity()).favUnFavButtonClicked(); //notify activity about the click
         }
 
         private void saveMovie() {

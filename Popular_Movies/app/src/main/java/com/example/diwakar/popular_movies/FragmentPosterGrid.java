@@ -68,6 +68,8 @@ public class FragmentPosterGrid extends Fragment {
         MODE_CURRENT = getActivity().getIntent().getIntExtra("mode", MODE_NORMAL);
         if ( MODE_CURRENT == MODE_FAVORITE) {
             displayedMovieList = getMoviesList();
+            if(displayedMovieList.isEmpty())
+                Toast.makeText(getContext(), "You have no movies marked favorite", Toast.LENGTH_SHORT).show();
             gridViewAdapter.addAll(displayedMovieList);
         } else
             executeFetchMoviesTask();
@@ -179,6 +181,15 @@ public class FragmentPosterGrid extends Fragment {
                 gridView.setAdapter(new ImageAdapter(getContext(), displayedMovieList));
             }
         }
+    }
+
+    public void refreshGridInFavMode() {
+        if (gridViewAdapter != null) {
+            displayedMovieList = getMoviesList();
+            gridViewAdapter.addAll(displayedMovieList);
+        }
+        else
+            Log.w(FragmentPosterGrid.class.getSimpleName(), "refreshGrid called on null " + gridViewAdapter.getClass().getSimpleName());
     }
 
     public List<MovieInfo> getMoviesList() {

@@ -157,9 +157,15 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    public void favUnFavButtonClicked() {
+        if(MODE_CURRENT == MODE_FAVORITE)
+            fragmentPosterGrid.refreshGridInFavMode();
+    }
+
     public void fragmentDetailsDetached() {
         FrameLayout fragmentPosterGridLayout = (FrameLayout) findViewById(R.id.My_Container_1_ID);
         fragmentPosterGridLayout.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+
         movieBeingDisplayed = null;
     }
 }
