@@ -8,7 +8,7 @@ import com.example.diwakar.popular_movies.BuildConfig;
 
 /**
  * Implement your custom database creation or upgrade code here.
- *
+ * <p/>
  * This file will not be overwritten if you re-run the content provider generator.
  */
 public class MovieSQLiteOpenHelperCallbacks {
@@ -30,7 +30,8 @@ public class MovieSQLiteOpenHelperCallbacks {
     }
 
     public void onUpgrade(final Context context, final SQLiteDatabase db, final int oldVersion, final int newVersion) {
-        if (BuildConfig.DEBUG) Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
         // Insert your upgrading code here.
     }
 }

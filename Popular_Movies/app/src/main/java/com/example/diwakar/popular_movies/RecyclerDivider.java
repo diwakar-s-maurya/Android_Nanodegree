@@ -11,6 +11,7 @@ import android.view.View;
  * Created by diwakar on 7/6/16.
  */
 
+//divider for any recycler view
 public class RecyclerDivider extends RecyclerView.ItemDecoration {
     private Drawable mDivider;
 

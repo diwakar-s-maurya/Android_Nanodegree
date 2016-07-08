@@ -256,7 +256,7 @@ public abstract class AbstractSelection<T extends AbstractSelection<?>> {
     }
 
     protected Object[] toObjectArray(Boolean value) {
-        return new Object[] { value };
+        return new Object[]{value};
     }
 
 
@@ -362,7 +362,7 @@ public abstract class AbstractSelection<T extends AbstractSelection<?>> {
     }
 
     public int count(ContentResolver resolver) {
-        Cursor cursor = resolver.query(uri(), new String[] { COUNT }, sel(), args(), null);
+        Cursor cursor = resolver.query(uri(), new String[]{COUNT}, sel(), args(), null);
         if (cursor == null) return 0;
         try {
             return cursor.moveToFirst() ? cursor.getInt(0) : 0;

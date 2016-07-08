@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 /**
  * Created by diwakar on 7/7/16.
@@ -28,39 +27,36 @@ public class MainActivity extends AppCompatActivity {
     FragmentDetails fragmentDetails;
     Menu menu;
     MovieInfo movieBeingDisplayed = null;
-    private final int MODE_FAVORITE = 1;
-    private final int MODE_NORMAL = 2;
-    private int MODE_CURRENT = MODE_NORMAL;
+    private int MODE_CURRENT = ProjectConstants.MODE_NORMAL;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fragmentPosterGrid = new FragmentPosterGrid();//create the fragment instance for the top fragment
-        FragmentManager manager = getSupportFragmentManager();//create an instance of fragment manager
-        FragmentTransaction transaction = manager.beginTransaction();//create an instance of Fragment-transaction
+        fragmentPosterGrid = new FragmentPosterGrid();
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
         transaction.replace(R.id.My_Container_1_ID, fragmentPosterGrid);
         transaction.commit();
 
-        MODE_CURRENT = getIntent().getIntExtra("mode", MODE_NORMAL);
+        MODE_CURRENT = getIntent().getIntExtra(ProjectConstants.BUNDLE_MODE, ProjectConstants.MODE_NORMAL);
 
         ActionBar actionBar = getSupportActionBar();
-        if (MODE_CURRENT == MODE_FAVORITE) {
-            actionBar.setTitle("Your Favorites");
+        if (MODE_CURRENT == ProjectConstants.MODE_FAVOURITE) {
+            actionBar.setTitle(getString(R.string.title_your_favorite));
         } else {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
             String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
             if (sortBy.equals(getString(R.string.pref_popular)))
-                actionBar.setSubtitle("by popularity");
+                actionBar.setSubtitle(getString(R.string.subtitle_by_popularity));
             else
-                actionBar.setSubtitle("by rating");
+                actionBar.setSubtitle(R.string.subtitle_by_rating);
         }
 
         if (savedInstanceState != null) {
-            movieBeingDisplayed = savedInstanceState.getParcelable("movieBeingDisplayed");
+            movieBeingDisplayed = savedInstanceState.getParcelable(ProjectConstants.BUNDLE_MOVIE_BEING_DISPLAYED);
             if (movieBeingDisplayed != null) {
-                Toast.makeText(MainActivity.this, "restored", Toast.LENGTH_SHORT).show();
                 movieFromPosterGridClicked(movieBeingDisplayed);
             }
         }
@@ -70,18 +66,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (movieBeingDisplayed != null) {
-            outState.putParcelable("movieBeingDisplayed", movieBeingDisplayed);
-            Toast.makeText(MainActivity.this, "saved", Toast.LENGTH_SHORT).show();
+            outState.putParcelable(ProjectConstants.BUNDLE_MOVIE_BEING_DISPLAYED, movieBeingDisplayed);
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
 
-        if (MODE_CURRENT == MODE_FAVORITE) {
+        if (MODE_CURRENT == ProjectConstants.MODE_FAVOURITE) {
             menu.findItem(R.id.show_saved_movies).setVisible(false);
         }
         this.menu = menu;
@@ -93,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.show_saved_movies:
                 Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                intent.putExtra("mode", MODE_FAVORITE);
+                intent.putExtra(ProjectConstants.BUNDLE_MODE, ProjectConstants.MODE_FAVOURITE);
                 startActivity(intent);
                 return true;
         }
@@ -104,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
 
-        if(MODE_CURRENT == MODE_NORMAL) {
+        if (MODE_CURRENT == ProjectConstants.MODE_NORMAL) {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
             if (sortBy.equals(getString(R.string.pref_popular))) {
@@ -120,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    //poster clicked, show details
     void movieFromPosterGridClicked(MovieInfo movieInfo) {
         movieBeingDisplayed = movieInfo;
         FrameLayout fragmentPosterGridLayout = (FrameLayout) findViewById(R.id.My_Container_1_ID);
@@ -142,12 +137,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Bundle bundle = new Bundle();
-        bundle.putParcelable("movie_info", movieInfo);
+        bundle.putParcelable(ProjectConstants.BUNDLE_MOVIE_INFO, movieInfo);
 
         if (fragmentDetails.getArguments() == null) {
             fragmentDetails.setArguments(bundle);
         } else {
-            //Consider explicitly clearing arguments here
             fragmentDetails.getArguments().putAll(bundle);
         }
 
@@ -157,11 +151,13 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    //favourite/unfavourite button clicked, refresh the grid by adding/removing the movie
     public void favUnFavButtonClicked() {
-        if(MODE_CURRENT == MODE_FAVORITE)
+        if (MODE_CURRENT == ProjectConstants.MODE_FAVOURITE)
             fragmentPosterGrid.refreshGridInFavMode();
     }
 
+    //details panel closed, expand movie gird
     public void fragmentDetailsDetached() {
         FrameLayout fragmentPosterGridLayout = (FrameLayout) findViewById(R.id.My_Container_1_ID);
         fragmentPosterGridLayout.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;

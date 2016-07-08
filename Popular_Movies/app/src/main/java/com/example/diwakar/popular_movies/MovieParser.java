@@ -13,6 +13,8 @@ import java.util.List;
 /**
  * Created by diwakar on 7/3/16.
  */
+
+//parse movie info from json string
 public class MovieParser implements Parcelable {
     @SuppressWarnings("unused")
     public static final Parcelable.Creator<MovieParser> CREATOR = new Parcelable.Creator<MovieParser>() {
@@ -81,7 +83,7 @@ public class MovieParser implements Parcelable {
     public List<MovieInfo> getAllMovies() {
         List<MovieInfo> allMovies = new ArrayList<>();
         int len = movieCount();
-        for(int i = 0; i < len; ++i)
+        for (int i = 0; i < len; ++i)
             allMovies.add(getMovieInfo(i));
         return allMovies;
     }

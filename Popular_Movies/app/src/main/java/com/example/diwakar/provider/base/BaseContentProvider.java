@@ -21,22 +21,29 @@ public abstract class BaseContentProvider extends ContentProvider {
     public static final String QUERY_GROUP_BY = "QUERY_GROUP_BY";
     public static final String QUERY_HAVING = "QUERY_HAVING";
     public static final String QUERY_LIMIT = "QUERY_LIMIT";
+    protected SQLiteOpenHelper mSqLiteOpenHelper;
 
-    public static class QueryParams {
-        public String table;
-        public String tablesWithJoins;
-        public String idColumn;
-        public String selection;
-        public String orderBy;
+    public static Uri notify(Uri uri, boolean notify) {
+        return uri.buildUpon().appendQueryParameter(QUERY_NOTIFY, String.valueOf(notify)).build();
     }
 
+    public static Uri groupBy(Uri uri, String groupBy) {
+        return uri.buildUpon().appendQueryParameter(QUERY_GROUP_BY, groupBy).build();
+    }
+
+    public static Uri having(Uri uri, String having) {
+        return uri.buildUpon().appendQueryParameter(QUERY_HAVING, having).build();
+    }
+
+    public static Uri limit(Uri uri, String limit) {
+        return uri.buildUpon().appendQueryParameter(QUERY_LIMIT, limit).build();
+    }
 
     protected abstract QueryParams getQueryParams(Uri uri, String selection, String[] projection);
+
     protected abstract boolean hasDebug();
 
     protected abstract SQLiteOpenHelper createSqLiteOpenHelper();
-
-    protected SQLiteOpenHelper mSqLiteOpenHelper;
 
     @Override
     public final boolean onCreate() {
@@ -53,13 +60,13 @@ public abstract class BaseContentProvider extends ContentProvider {
                 // field.setAccessible(true);
                 // field.set(null, true);
             } catch (Throwable t) {
-                if (hasDebug()) Log.w(getClass().getSimpleName(), "Could not enable SQLiteDebug logging", t);
+                if (hasDebug())
+                    Log.w(getClass().getSimpleName(), "Could not enable SQLiteDebug logging", t);
             }
         }
         mSqLiteOpenHelper = createSqLiteOpenHelper();
         return false;
     }
-
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
@@ -176,20 +183,11 @@ public abstract class BaseContentProvider extends ContentProvider {
         }
     }
 
-
-    public static Uri notify(Uri uri, boolean notify) {
-        return uri.buildUpon().appendQueryParameter(QUERY_NOTIFY, String.valueOf(notify)).build();
-    }
-
-    public static Uri groupBy(Uri uri, String groupBy) {
-        return uri.buildUpon().appendQueryParameter(QUERY_GROUP_BY, groupBy).build();
-    }
-
-    public static Uri having(Uri uri, String having) {
-        return uri.buildUpon().appendQueryParameter(QUERY_HAVING, having).build();
-    }
-
-    public static Uri limit(Uri uri, String limit) {
-        return uri.buildUpon().appendQueryParameter(QUERY_LIMIT, limit).build();
+    public static class QueryParams {
+        public String table;
+        public String tablesWithJoins;
+        public String idColumn;
+        public String selection;
+        public String orderBy;
     }
 }

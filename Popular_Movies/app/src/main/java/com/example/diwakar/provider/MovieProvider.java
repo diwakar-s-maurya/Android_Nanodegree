@@ -14,19 +14,14 @@ import com.example.diwakar.provider.movie.MovieColumns;
 import java.util.Arrays;
 
 public class MovieProvider extends BaseContentProvider {
-    private static final String TAG = MovieProvider.class.getSimpleName();
-
-    private static final boolean DEBUG = BuildConfig.DEBUG;
-
-    private static final String TYPE_CURSOR_ITEM = "vnd.android.cursor.item/";
-    private static final String TYPE_CURSOR_DIR = "vnd.android.cursor.dir/";
-
     public static final String AUTHORITY = "com.example.diwakar.popular_movies.provider";
     public static final String CONTENT_URI_BASE = "content://" + AUTHORITY;
-
+    private static final String TAG = MovieProvider.class.getSimpleName();
+    private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final String TYPE_CURSOR_ITEM = "vnd.android.cursor.item/";
+    private static final String TYPE_CURSOR_DIR = "vnd.android.cursor.dir/";
     private static final int URI_TYPE_MOVIE = 0;
     private static final int URI_TYPE_MOVIE_ID = 1;
-
 
 
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
@@ -73,13 +68,15 @@ public class MovieProvider extends BaseContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        if (DEBUG) Log.d(TAG, "update uri=" + uri + " values=" + values + " selection=" + selection + " selectionArgs=" + Arrays.toString(selectionArgs));
+        if (DEBUG)
+            Log.d(TAG, "update uri=" + uri + " values=" + values + " selection=" + selection + " selectionArgs=" + Arrays.toString(selectionArgs));
         return super.update(uri, values, selection, selectionArgs);
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        if (DEBUG) Log.d(TAG, "delete uri=" + uri + " selection=" + selection + " selectionArgs=" + Arrays.toString(selectionArgs));
+        if (DEBUG)
+            Log.d(TAG, "delete uri=" + uri + " selection=" + selection + " selectionArgs=" + Arrays.toString(selectionArgs));
         return super.delete(uri, selection, selectionArgs);
     }
 

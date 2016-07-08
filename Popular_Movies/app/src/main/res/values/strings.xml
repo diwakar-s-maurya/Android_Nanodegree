@@ -18,6 +18,18 @@
     <string name="action_unmark_favorite">Unmark favorite</string>
     <string name="title_trailers">Trailers</string>
     <string name="title_reviews">Reviews</string>
-    <string name="show_saved_movies">Show saved movies</string>
+    <string name="show_favourite_movies">Show favourite movies</string>
+
+    <string name="title_your_favorite">Your Favourite</string>
+    <string name="subtitle_by_popularity">by popularity</string>
+    <string name="subtitle_by_rating">by rating</string>
+
+    <string name="notification_no_favourites">You have no movies marked favourite</string>
+    <string name="notification_movie_fetch_failure">These was error in getting movies</string>
+    <string name="notification_added_favourite_movie">Added to favourites</string>
+    <string name="notification_removed_favourite_movie">Removed from favourite</string>
+
+    <string name="info_favourite_button">Click to remove from favourites</string>
+    <string name="info_unfavourite_button">Click to add to favourites</string>
 
 </resources>

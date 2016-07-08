@@ -6,7 +6,21 @@ import android.os.Parcelable;
 /**
  * Created by diwakar on 7/4/16.
  */
+
+// keeps info about a movie
 public class MovieInfo implements Parcelable {
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>() {
+        @Override
+        public MovieInfo createFromParcel(Parcel in) {
+            return new MovieInfo(in);
+        }
+
+        @Override
+        public MovieInfo[] newArray(int size) {
+            return new MovieInfo[size];
+        }
+    };
     public String title;
     public String posterURL;
     public String release_date;
@@ -44,17 +58,4 @@ public class MovieInfo implements Parcelable {
         dest.writeString(plot);
         dest.writeInt(ID);
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>() {
-        @Override
-        public MovieInfo createFromParcel(Parcel in) {
-            return new MovieInfo(in);
-        }
-
-        @Override
-        public MovieInfo[] newArray(int size) {
-            return new MovieInfo[size];
-        }
-    };
 }

@@ -6,6 +6,8 @@ import android.view.View;
 /**
  * Created by diwakar on 7/5/16.
  */
+
+// click support for any recycler view
 public class RecyclerItemClickSupport {
     private final RecyclerView mRecyclerView;
     private OnItemClickListener mOnItemClickListener;

@@ -16,15 +16,6 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHold
 
     private List<String> reviewList;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView review_content;
-
-        public MyViewHolder(View view) {
-            super(view);
-            review_content = (TextView) view.findViewById(R.id.movie_review_content);
-        }
-    }
-
     public ReviewAdapter(List<String> reviewList) {
         this.reviewList = reviewList;
     }
@@ -52,5 +43,14 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.MyViewHold
     @Override
     public int getItemCount() {
         return reviewList.size();
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder {
+        public TextView review_content;
+
+        public MyViewHolder(View view) {
+            super(view);
+            review_content = (TextView) view.findViewById(R.id.movie_review_content);
+        }
     }
 }

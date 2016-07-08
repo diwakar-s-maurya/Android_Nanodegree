@@ -14,8 +14,8 @@ import java.util.List;
  * Created by diwakar on 7/3/16.
  */
 public class ImageAdapter extends BaseAdapter {
-    private Context context;
     List<MovieInfo> movieInfoList;
+    private Context context;
 
     // Constructor
     public ImageAdapter(Context context, List<MovieInfo> movieInfoList) {

@@ -12,14 +12,13 @@ import android.support.annotation.Nullable;
  */
 public class MovieContentProvider extends ContentProvider {
 
+    final static int MOVIES_ID = 1;
     private static final String AUTH = "com.example.diwakar.popular_movies.MovieContentProvider";
     private static final String MOVIES_PATH = "MOVIES";
     private static final Uri MOVIES_URI = Uri.parse("content://" + AUTH + MOVIES_PATH);
     private static final UriMatcher uriMatcher;
-    final static int MOVIES_ID = 1;
 
-    static
-    {
+    static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(AUTH, MOVIES_PATH, MOVIES_ID);
     }

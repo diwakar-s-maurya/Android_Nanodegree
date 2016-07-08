@@ -1,13 +1,11 @@
 package com.example.diwakar.popular_movies;
 
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -22,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.diwakar.provider.movie.MovieContentValues;
+import com.example.diwakar.provider.movie.MovieCursor;
 import com.example.diwakar.provider.movie.MovieSelection;
 import com.matthewtamlin.sliding_intro_screen_library.indicators.DotIndicator;
 import com.squareup.picasso.Picasso;
@@ -42,14 +41,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class FragmentDetails extends Fragment {
 
     private ReviewAdapter adapterReview;
-    String movieID;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,7 +61,6 @@ public class FragmentDetails extends Fragment {
 
         MovieInfo movieInfo = getArguments().getParcelable("movie_info");
 
-        movieID = String.valueOf(movieInfo.ID);
         ((TextView) view.findViewById(R.id.movie_title)).setText(movieInfo.title);
         ImageView posterView = (ImageView) view.findViewById(R.id.movie_poster);
         Picasso.with(getContext()).load(movieInfo.posterURL).into(posterView);
@@ -75,30 +70,27 @@ public class FragmentDetails extends Fragment {
         ((TextView) view.findViewById(R.id.movie_rating)).setText(movieInfo.rating);
         ((TextView) view.findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
-        ImageView favImage = ((ImageView) view.findViewById(R.id.action_favorite));
-        ImageView unfavImage = ((ImageView) view.findViewById(R.id.action_unfavorite));
+        ImageView favImage = ((ImageView) view.findViewById(R.id.action_favourite));
+        ImageView unfavImage = ((ImageView) view.findViewById(R.id.action_unfavourite));
         onFavUnFavButtonClick favUnfavListener = new onFavUnFavButtonClick();
         favImage.setOnClickListener(favUnfavListener);
         unfavImage.setOnClickListener(favUnfavListener);
         favImage.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(getContext(), "Marked Favorite", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.info_favourite_button), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
         unfavImage.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(getContext(), "Not marked favorite", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.info_unfavourite_button), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
-        boolean foundThisMovie = set.contains(String.valueOf(movieInfo.ID));
-        if (foundThisMovie) {
+        if (checkIfFavourite(movieInfo.ID)) {
             favImage.setVisibility(View.VISIBLE);
             unfavImage.setVisibility(View.GONE);
         } else {
@@ -135,18 +127,28 @@ public class FragmentDetails extends Fragment {
         //reviewRecycler.addItemDecoration(new RecyclerDivider(this));
         reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
 
-        (new FetchMovieReviewTask()).execute(movieID);
-        (new FetchMovieTrailerTask()).execute(movieID);
+        (new FetchMovieReviewTask()).execute(String.valueOf(movieInfo.ID));
+        (new FetchMovieTrailerTask()).execute(String.valueOf(movieInfo.ID));
         return view;
     }
 
 
+    //notify activity about self detachment
     @Override
     public void onDetach() {
         super.onDetach();
         ((MainActivity) getActivity()).fragmentDetailsDetached();
     }
 
+    //checks if a movie is marked favorite or not. true => favourite, false => not favourite
+    private boolean checkIfFavourite(int movieID) {
+        MovieSelection where = new MovieSelection();
+        where.movieid(String.valueOf(movieID));
+        MovieCursor cursor = where.query(getContext());
+        return cursor.moveToNext();
+    }
+
+    //fetch movie reviews
     public class FetchMovieReviewTask extends AsyncTask<String, Void, List<String>> {
         private String API_PARAM = "api_key";
         private String REVIEW_PATH = "reviews";
@@ -276,7 +278,7 @@ public class FragmentDetails extends Fragment {
             if (list == null)
                 return;
 
-            if (getView() != null) { //if the fragment is deleted before reaching this onpost, then view will be null
+            if (getView() != null) { //if the fragment is deleted before reaching this method, then view will be null.
                 TrailerViewPager viewPager = (TrailerViewPager) getView().findViewById(R.id.trailer_pager);
                 TrailerPagerAdapter trailerPagerAdapter = new TrailerPagerAdapter(getContext(), list);
                 viewPager.setAdapter(trailerPagerAdapter);
@@ -292,33 +294,28 @@ public class FragmentDetails extends Fragment {
 
         @Override
         public void onClick(View v) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-            Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
-            ImageView favImage = ((ImageView) getView().findViewById(R.id.action_favorite));
-            ImageView unFavImage = ((ImageView) getView().findViewById(R.id.action_unfavorite));
+            ImageView favImage = ((ImageView) getView().findViewById(R.id.action_favourite));
+            ImageView unFavImage = ((ImageView) getView().findViewById(R.id.action_unfavourite));
             switch (v.getId()) {
-                case R.id.action_unfavorite:
-                    set.add(String.valueOf(movieID));
+                case R.id.action_unfavourite:
                     saveMovie();
                     favImage.setVisibility(View.VISIBLE);
                     unFavImage.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), getString(R.string.notification_added_favourite_movie), Toast.LENGTH_SHORT).show();
                     break;
-                case R.id.action_favorite:
-                    set.remove(String.valueOf(movieID));
+                case R.id.action_favourite:
                     unsaveMovie();
                     favImage.setVisibility(View.GONE);
                     unFavImage.setVisibility(View.VISIBLE);
+                    Toast.makeText(getContext(), getString(R.string.notification_removed_favourite_movie), Toast.LENGTH_SHORT).show();
                     break;
             }
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putStringSet("favorites", set);
-            editor.apply();
 
-            ((MainActivity)getActivity()).favUnFavButtonClicked(); //notify activity about the click
+            ((MainActivity) getActivity()).favUnFavButtonClicked(); //notify activity about the click
         }
 
         private void saveMovie() {
-            MovieInfo movieInfo = getArguments().getParcelable("movie_info");
+            MovieInfo movieInfo = getArguments().getParcelable(ProjectConstants.BUNDLE_MOVIE_INFO);
 
             MovieContentValues values = new MovieContentValues();
             values.putTitle(movieInfo.title);
@@ -332,7 +329,7 @@ public class FragmentDetails extends Fragment {
             Bitmap bitmap = ((BitmapDrawable) posterView.getDrawable()).getBitmap();
 
             try {
-                String path = getContext().getFilesDir() + movieID;
+                String path = getContext().getFilesDir() + String.valueOf(movieInfo.ID);
                 File file = new File(path);
                 FileOutputStream fos = new FileOutputStream(file);
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
@@ -349,14 +346,12 @@ public class FragmentDetails extends Fragment {
         }
 
         private void unsaveMovie() {
-            MovieInfo info = getArguments().getParcelable("movie_info");
+            MovieInfo info = getArguments().getParcelable(ProjectConstants.BUNDLE_MOVIE_INFO);
             MovieSelection where = new MovieSelection();
-            where.movieid(movieID);
+            where.movieid(String.valueOf(info.ID));
             where.delete(getContext());
-            File file = new File(getContext().getFilesDir() + movieID);
+            File file = new File(getContext().getFilesDir() + String.valueOf(info.ID));
             file.delete();
-            //// TODO: 7/6/16 to check is delete working
         }
-
     }
 }

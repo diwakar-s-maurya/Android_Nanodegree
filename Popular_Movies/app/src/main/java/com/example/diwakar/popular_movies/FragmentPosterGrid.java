@@ -3,12 +3,10 @@ package com.example.diwakar.popular_movies;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,12 +32,10 @@ import java.util.List;
 
 public class FragmentPosterGrid extends Fragment {
 
-    final String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
-    final String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
-    final private String LOG_TAG = FragmentPosterGrid.class.getSimpleName();
-    final int MODE_FAVORITE = 1;
-    final int MODE_NORMAL = 2;
-    private int MODE_CURRENT = MODE_NORMAL;
+    private final String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
+    private final String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
+    private final String LOG_TAG = FragmentPosterGrid.class.getSimpleName();
+    private int MODE_CURRENT = ProjectConstants.MODE_NORMAL;
     private List<MovieInfo> displayedMovieList;
     private ImageAdapter gridViewAdapter;
 
@@ -50,9 +46,10 @@ public class FragmentPosterGrid extends Fragment {
         setHasOptionsMenu(true);
         final View view = inflater.inflate(R.layout.fragment_poster_grid, container, false);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getActivity().getWindow().setSharedElementExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.shared_element_transition));
-        }
+        // TODO: 7/7/16 shared element transition does not work. check
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            getActivity().getWindow().setSharedElementExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.shared_element_transition));
+//        }
 
         assert ((GridView) view.findViewById(R.id.grid_movies)) != null;
         GridView gridView = (GridView) view.findViewById(R.id.grid_movies);
@@ -65,11 +62,11 @@ public class FragmentPosterGrid extends Fragment {
             }
         });
 
-        MODE_CURRENT = getActivity().getIntent().getIntExtra("mode", MODE_NORMAL);
-        if ( MODE_CURRENT == MODE_FAVORITE) {
-            displayedMovieList = getMoviesList();
-            if(displayedMovieList.isEmpty())
-                Toast.makeText(getContext(), "You have no movies marked favorite", Toast.LENGTH_SHORT).show();
+        MODE_CURRENT = getActivity().getIntent().getIntExtra(ProjectConstants.BUNDLE_MODE, ProjectConstants.MODE_NORMAL);
+        if (MODE_CURRENT == ProjectConstants.MODE_FAVOURITE) {
+            displayedMovieList = getFavoriteMoviesList();
+            if (displayedMovieList.isEmpty())
+                Toast.makeText(getContext(), getString(R.string.notification_no_favourites), Toast.LENGTH_SHORT).show();
             gridViewAdapter.addAll(displayedMovieList);
         } else
             executeFetchMoviesTask();
@@ -80,11 +77,12 @@ public class FragmentPosterGrid extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if(MODE_CURRENT == MODE_NORMAL)
+        if (MODE_CURRENT == ProjectConstants.MODE_NORMAL)
             inflater.inflate(R.menu.details, menu);
     }
 
-    //click on menu is first propagated to main activity, then to this menu. this can be reached only if mainactivity returned false;
+    //click on menu is first propagated to main activity, then to this menu. this can be reached only if main activity returned false;
+    //menu items added to menu are accessible at both places
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -107,6 +105,7 @@ public class FragmentPosterGrid extends Fragment {
         return false;
     }
 
+    //fetches movie info depending on preference: popular or top-rated
     private void executeFetchMoviesTask() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
@@ -115,6 +114,35 @@ public class FragmentPosterGrid extends Fragment {
         } else {
             (new FetchPopularMovies()).execute(TOP_RATE_MOVIES_URL);
         }
+    }
+
+    //refresh movie poster grid if showing favourite movies
+    public void refreshGridInFavMode() {
+        if (gridViewAdapter != null) {
+            displayedMovieList = getFavoriteMoviesList();
+            gridViewAdapter.addAll(displayedMovieList);
+        } else
+            Log.w(FragmentPosterGrid.class.getSimpleName(), "refreshGrid called on null " + gridViewAdapter.getClass().getSimpleName());
+    }
+
+    //get favourite movies info list
+    public List<MovieInfo> getFavoriteMoviesList() {
+        MovieSelection where = new MovieSelection();
+        MovieCursor movieCursor = where.query(getContext());
+        List<MovieInfo> list = new ArrayList<>();
+        while (movieCursor.moveToNext()) {
+            MovieInfo info = new MovieInfo();
+            info.title = movieCursor.getTitle();
+            info.posterURL = movieCursor.getPosterurl();
+            info.release_date = movieCursor.getReleaseDate();
+            info.duration = movieCursor.getDuration();
+            info.rating = movieCursor.getRating();
+            info.plot = movieCursor.getPlot();
+            info.ID = Integer.parseInt(movieCursor.getMovieid());
+
+            list.add(info);
+        }
+        return list;
     }
 
     private class FetchPopularMovies extends AsyncTask<String, Void, String> {
@@ -168,7 +196,7 @@ public class FragmentPosterGrid extends Fragment {
 
         @Override
         protected void onCancelled(String s) {
-            Toast.makeText(getContext(), "Could not get movies", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), getString(R.string.notification_movie_fetch_failure), Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -181,33 +209,5 @@ public class FragmentPosterGrid extends Fragment {
                 gridView.setAdapter(new ImageAdapter(getContext(), displayedMovieList));
             }
         }
-    }
-
-    public void refreshGridInFavMode() {
-        if (gridViewAdapter != null) {
-            displayedMovieList = getMoviesList();
-            gridViewAdapter.addAll(displayedMovieList);
-        }
-        else
-            Log.w(FragmentPosterGrid.class.getSimpleName(), "refreshGrid called on null " + gridViewAdapter.getClass().getSimpleName());
-    }
-
-    public List<MovieInfo> getMoviesList() {
-        MovieSelection where = new MovieSelection();
-        MovieCursor movieCursor = where.query(getContext());
-        List<MovieInfo> list = new ArrayList<>();
-        while (movieCursor.moveToNext()) {
-            MovieInfo info = new MovieInfo();
-            info.title = movieCursor.getTitle();
-            info.posterURL = movieCursor.getPosterurl();
-            info.release_date = movieCursor.getReleaseDate();
-            info.duration = movieCursor.getDuration();
-            info.rating = movieCursor.getRating();
-            info.plot = movieCursor.getPlot();
-            info.ID = Integer.parseInt(movieCursor.getMovieid());
-
-            list.add(info);
-        }
-        return list;
     }
 }
