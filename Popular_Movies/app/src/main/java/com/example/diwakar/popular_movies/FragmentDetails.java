@@ -15,9 +15,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -63,8 +60,11 @@ public class FragmentDetails extends Fragment {
 //            getActivity().getWindow().setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.shared_element_transition));
 //        }
 
+        setHasOptionsMenu(true);
+
         MovieInfo movieInfo = getArguments().getParcelable("movie_info");
 
+        movieID = String.valueOf(movieInfo.ID);
         ((TextView) view.findViewById(R.id.movie_title)).setText(movieInfo.title);
         ImageView posterView = (ImageView) view.findViewById(R.id.movie_poster);
         Picasso.with(getContext()).load(movieInfo.posterURL).into(posterView);
@@ -74,6 +74,22 @@ public class FragmentDetails extends Fragment {
         ((TextView) view.findViewById(R.id.movie_rating)).setText(movieInfo.rating);
         ((TextView) view.findViewById(R.id.movie_synopsis)).setText(movieInfo.plot);
 
+        ImageView favImage = ((ImageView) view.findViewById(R.id.action_favorite));
+        ImageView unfavImage = ((ImageView) view.findViewById(R.id.action_unfavorite));
+        onFavUnFavButtonClick favUnfavListener = new onFavUnFavButtonClick();
+        favImage.setOnClickListener(favUnfavListener);
+        unfavImage.setOnClickListener(favUnfavListener);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
+        boolean foundThisMovie = set.contains(String.valueOf(movieInfo.ID));
+        if (foundThisMovie) {
+            favImage.setVisibility(View.VISIBLE);
+            unfavImage.setVisibility(View.GONE);
+        } else {
+            favImage.setVisibility(View.GONE);
+            unfavImage.setVisibility(View.VISIBLE);
+        }
 
         ViewPager viewPager = (ViewPager) view.findViewById(R.id.trailer_pager);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -104,103 +120,17 @@ public class FragmentDetails extends Fragment {
         //reviewRecycler.addItemDecoration(new RecyclerDivider(this));
         reviewRecycler.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).color(Color.DKGRAY).sizeResId(R.dimen.trailer_recycler_diviver_size).build());
 
-        movieID = String.valueOf(movieInfo.ID);
         (new FetchMovieReviewTask()).execute(movieID);
         (new FetchMovieTrailerTask()).execute(movieID);
         return view;
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.main, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem menuItem = menu.findItem(R.id.action_favorite);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
-        boolean foundThisMovie = set.contains(movieID);
-        if (foundThisMovie) {
-            menuItem.setIcon(R.drawable.favorite_red);
-            menuItem.setTitle(getString(R.string.action_unmark_favorite));
-        } else {
-            menuItem.setIcon(R.drawable.favorite_white);
-            menuItem.setTitle(getString(R.string.action_mark_favorite));
-        }
+    public void onDetach() {
+        super.onDetach();
+        ((MainActivity) getActivity()).fragmentDetailsDetached();
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
-        switch (item.getItemId()) {
-            case R.id.action_favorite:
-                if (item.getTitle() == getString(R.string.action_mark_favorite)) {
-                    item.setIcon(R.drawable.favorite_red);
-                    item.setTitle(getString(R.string.action_unmark_favorite));
-                    set.add(movieID);
-                    saveMovie();
-                } else {
-                    item.setIcon(R.drawable.favorite_white);
-                    item.setTitle(getString(R.string.action_mark_favorite));
-                    set.remove(movieID);
-                    unsaveMovie();
-                }
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet("favorites", set);
-        editor.apply();
-        return true;
-    }
-
-    private void saveMovie() {
-        MovieInfo movieInfo = getArguments().getParcelable("movie_info");
-
-        MovieContentValues values = new MovieContentValues();
-        values.putTitle(movieInfo.title);
-        values.putReleaseDate(movieInfo.release_date);
-        values.putDurationNull();
-        values.putRating(movieInfo.rating);
-        values.putPlot(movieInfo.plot);
-        values.putMovieid(String.valueOf(movieInfo.ID));
-
-        ImageView posterView = (ImageView) getView().findViewById(R.id.movie_poster);
-        Bitmap bitmap = ((BitmapDrawable) posterView.getDrawable()).getBitmap();
-
-        try {
-            String path = getContext().getFilesDir() + movieID;
-            File file = new File(path);
-            FileOutputStream fos = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            values.putPosterurl("file:" + path); //this needs to be done to load image file using picasso
-            fos.flush();
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        values.insert(getContext());
-
-
-    }
-
-    private void unsaveMovie() {
-        MovieInfo info = getArguments().getParcelable("movie_info");
-        MovieSelection where = new MovieSelection();
-        where.movieid(movieID);
-        where.delete(getContext());
-        File file = new File(getContext().getFilesDir() + movieID);
-        file.delete();
-        //// TODO: 7/6/16 to check is delete working
-    }
-
 
     public class FetchMovieReviewTask extends AsyncTask<String, Void, List<String>> {
         private String API_PARAM = "api_key";
@@ -341,5 +271,75 @@ public class FragmentDetails extends Fragment {
                 viewPager.setPageMargin(pageMargin);
             }
         }
+    }
+
+    private class onFavUnFavButtonClick implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            Set<String> set = prefs.getStringSet("favorites", new HashSet<String>());
+            ImageView favImage = ((ImageView) getView().findViewById(R.id.action_favorite));
+            ImageView unFavImage = ((ImageView) getView().findViewById(R.id.action_unfavorite));
+            switch (v.getId()) {
+                case R.id.action_unfavorite:
+                    set.add(String.valueOf(movieID));
+                    saveMovie();
+                    favImage.setVisibility(View.VISIBLE);
+                    unFavImage.setVisibility(View.GONE);
+                    break;
+                case R.id.action_favorite:
+                    set.remove(String.valueOf(movieID));
+                    unsaveMovie();
+                    favImage.setVisibility(View.GONE);
+                    unFavImage.setVisibility(View.VISIBLE);
+                    break;
+            }
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putStringSet("favorites", set);
+            editor.apply();
+        }
+
+        private void saveMovie() {
+            MovieInfo movieInfo = getArguments().getParcelable("movie_info");
+
+            MovieContentValues values = new MovieContentValues();
+            values.putTitle(movieInfo.title);
+            values.putReleaseDate(movieInfo.release_date);
+            values.putDurationNull();
+            values.putRating(movieInfo.rating);
+            values.putPlot(movieInfo.plot);
+            values.putMovieid(String.valueOf(movieInfo.ID));
+
+            ImageView posterView = (ImageView) getView().findViewById(R.id.movie_poster);
+            Bitmap bitmap = ((BitmapDrawable) posterView.getDrawable()).getBitmap();
+
+            try {
+                String path = getContext().getFilesDir() + movieID;
+                File file = new File(path);
+                FileOutputStream fos = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                values.putPosterurl("file:" + path); //this needs to be done to load image file using picasso
+                fos.flush();
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            values.insert(getContext());
+        }
+
+        private void unsaveMovie() {
+            MovieInfo info = getArguments().getParcelable("movie_info");
+            MovieSelection where = new MovieSelection();
+            where.movieid(movieID);
+            where.delete(getContext());
+            File file = new File(getContext().getFilesDir() + movieID);
+            file.delete();
+            //// TODO: 7/6/16 to check is delete working
+        }
+
     }
 }

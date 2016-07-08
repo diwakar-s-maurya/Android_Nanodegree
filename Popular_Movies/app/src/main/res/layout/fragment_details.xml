@@ -65,6 +65,18 @@
                     android:id="@+id/movie_rating"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+                <ImageView
+                    android:id="@+id/action_favorite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/favorite_red" />
+
+                <ImageView
+                    android:id="@+id/action_unfavorite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/favorite_white" />
             </LinearLayout>
         </LinearLayout>
 

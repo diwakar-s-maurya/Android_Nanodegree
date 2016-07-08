@@ -7,6 +7,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by diwakar on 7/3/16.
  */
@@ -32,19 +35,6 @@ public class MovieParser implements Parcelable {
 
     protected MovieParser(Parcel in) {
         jsonData = in.readString();
-    }
-
-    public String getMoviePosterURL(int position) {
-        JSONObject data = null;
-        try {
-            data = new JSONObject(jsonData);
-            JSONArray results = data.getJSONArray("results");
-            JSONObject movieInfo = results.getJSONObject(position);
-            return movieInfo.getString("poster_path");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public int movieCount() {
@@ -81,22 +71,18 @@ public class MovieParser implements Parcelable {
             info.duration = String.valueOf(-1);
             info.rating = movieInfo.getString("vote_average") + "/10";
             info.plot = movieInfo.getString("overview");
-            info.ID = getMovieID(position);
+            info.ID = movieInfo.getInt("id");
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return info;
     }
 
-    public int getMovieID(int position) {
-        try {
-            JSONObject data = new JSONObject(jsonData);
-            JSONArray results = data.getJSONArray("results");
-            JSONObject movieInfo = results.getJSONObject(position);
-            return movieInfo.getInt("id");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return -1;
+    public List<MovieInfo> getAllMovies() {
+        List<MovieInfo> allMovies = new ArrayList<>();
+        int len = movieCount();
+        for(int i = 0; i < len; ++i)
+            allMovies.add(getMovieInfo(i));
+        return allMovies;
     }
 }

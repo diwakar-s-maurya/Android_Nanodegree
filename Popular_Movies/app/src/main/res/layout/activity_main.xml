@@ -7,7 +7,7 @@
 
     <FrameLayout
         android:id="@+id/My_Container_1_ID"
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 
     <FrameLayout

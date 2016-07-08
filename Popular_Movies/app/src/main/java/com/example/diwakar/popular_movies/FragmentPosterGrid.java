@@ -1,6 +1,5 @@
 package com.example.diwakar.popular_movies;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -8,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,148 +20,97 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.example.diwakar.provider.movie.MovieCursor;
+import com.example.diwakar.provider.movie.MovieSelection;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FragmentPosterGrid extends Fragment {
 
-    String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
-    String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
-    private String LOG_TAG = FragmentPosterGrid.class.getSimpleName();
-    private MovieParser movieParser = null;
-    private Menu menu = null;
-
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        outState.putParcelable("movie_parser", movieParser);
-//        super.onSaveInstanceState(outState);
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        movieParser = savedInstanceState.getParcelable("movie_parser");
-//        // Toast.makeText(FragmentPosterGrid.this, "restored", Toast.LENGTH_SHORT).show();
-//    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
+    final String POPULAR_MOVIES_URL = "http://api.themoviedb.org/3/movie/popular";
+    final String TOP_RATE_MOVIES_URL = "http://api.themoviedb.org/3/movie/top_rated";
+    final private String LOG_TAG = FragmentPosterGrid.class.getSimpleName();
+    final int MODE_FAVORITE = 1;
+    final int MODE_NORMAL = 2;
+    private int MODE_CURRENT = MODE_NORMAL;
+    private List<MovieInfo> displayedMovieList;
+    private ImageAdapter gridViewAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final View view = inflater.inflate(R.layout.fragment_poster_grid, container, false);
         setHasOptionsMenu(true);
+        final View view = inflater.inflate(R.layout.fragment_poster_grid, container, false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getActivity().getWindow().setSharedElementExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.shared_element_transition));
         }
 
-
-        if (savedInstanceState != null)
-            movieParser = savedInstanceState.getParcelable("movie_parser");
-        //else
-        //Toast.makeText(FragmentPosterGrid.this, "Create called", Toast.LENGTH_SHORT).show();
-
-        if (movieParser == null)
-            executeFetchMoviesTask();
-        else {
-            GridView gridView = (GridView) view.findViewById(R.id.grid_movies);
-            gridView.setAdapter(new ImageAdapter(getContext(), movieParser));
-        }
-
         assert ((GridView) view.findViewById(R.id.grid_movies)) != null;
-        ((GridView) view.findViewById(R.id.grid_movies)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        GridView gridView = (GridView) view.findViewById(R.id.grid_movies);
+        gridViewAdapter = new ImageAdapter(getContext(), new ArrayList<MovieInfo>());
+        gridView.setAdapter(gridViewAdapter);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-
-
-                ((MainActivity)getActivity()).movieFromPosterGridClicked(movieParser.getMovieInfo(position));
-                //                Intent intent = new Intent(getContext(), FragmentDetails.class);
-//                MovieInfo movieInfo = movieParser.getMovieInfo(position);
-//                intent.putExtra("movie_info", movieInfo);
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                    view.setTransitionName("poster_transition");
-//                }
-//
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                    ActivityOptionsCompat options = null;
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                        options = ActivityOptionsCompat.
-//                                makeSceneTransitionAnimation(getContext(), view, view.getTransitionName());
-//                    }
-//                    startActivity(intent, options.toBundle());
-//                } else
-//                    startActivity(intent);
+                ((MainActivity) getActivity()).movieFromPosterGridClicked(displayedMovieList.get(position));
             }
         });
+
+        MODE_CURRENT = getActivity().getIntent().getIntExtra("mode", MODE_NORMAL);
+        if ( MODE_CURRENT == MODE_FAVORITE) {
+            displayedMovieList = getMoviesList();
+            gridViewAdapter.addAll(displayedMovieList);
+        } else
+            executeFetchMoviesTask();
+
         return view;
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.main, menu);
-        this.menu = menu;
         super.onCreateOptionsMenu(menu, inflater);
-        Log.v("Menu", "called");
+        if(MODE_CURRENT == MODE_NORMAL)
+            inflater.inflate(R.menu.details, menu);
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
-        if (sortBy == getString(R.string.pref_popular))
-            menu.findItem(R.id.sortBy_popular).setVisible(false);
-        else
-            menu.findItem(R.id.sortBy_top_rated).setVisible(false);
-    }
-
+    //click on menu is first propagated to main activity, then to this menu. this can be reached only if mainactivity returned false;
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         SharedPreferences.Editor editor = prefs.edit();
-
+        ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
         switch (item.getItemId()) {
             case R.id.sortBy_popular:
                 editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
-                menu.findItem(R.id.sortBy_top_rated).setVisible(true);
-                menu.findItem(R.id.sortBy_popular).setVisible(false);
-                break;
+                actionBar.setSubtitle(R.string.title_sortBy_popular);
+                editor.apply();
+                executeFetchMoviesTask();
+                return true;
             case R.id.sortBy_top_rated:
                 editor.putString(getString(R.string.pref_sortBy_key), getString(R.string.pref_topRated));
-                menu.findItem(R.id.sortBy_popular).setVisible(true);
-                menu.findItem(R.id.sortBy_top_rated).setVisible(false);
-                break;
-            case R.id.show_saved_movies:
-                Intent intent = new Intent(getContext(), FavoriteMoviesActivity.class);
-                startActivity(intent);
-                break;
+                actionBar.setSubtitle(R.string.title_sortBy_top_rated);
+                editor.apply();
+                executeFetchMoviesTask();
+                return true;
         }
-        editor.apply();
-        executeFetchMoviesTask();
-        return true;
+        return false;
     }
 
     private void executeFetchMoviesTask() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         String sortBy = prefs.getString(getString(R.string.pref_sortBy_key), getString(R.string.pref_popular));
-//        ActionBar actionBar = getSupportActionBar();
-//        assert actionBar != null;
-        if (sortBy == getString(R.string.pref_popular)) {
-//            actionBar.setSubtitle("by popularity");
+        if (sortBy.equals(getString(R.string.pref_popular))) {
             (new FetchPopularMovies()).execute(POPULAR_MOVIES_URL);
         } else {
-//            actionBar.setSubtitle("by rating");
             (new FetchPopularMovies()).execute(TOP_RATE_MOVIES_URL);
         }
     }
@@ -212,7 +161,6 @@ public class FragmentPosterGrid extends Fragment {
             }
             if (result == null)
                 while (cancel(true) != true) ;
-            movieParser = new MovieParser(result);
             return result;
         }
 
@@ -224,10 +172,31 @@ public class FragmentPosterGrid extends Fragment {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.v("Result", s);
-            movieParser = new MovieParser(s);
-            GridView gridView = (GridView) getView().findViewById(R.id.grid_movies);
-            gridView.setAdapter(new ImageAdapter(getContext(), movieParser));
+            if (getView() != null) { //if fragment not deleted before reaching here (eg: screen rotated before this task reached here)
+                // Log.v("Result", s);
+                displayedMovieList = (new MovieParser(s)).getAllMovies();
+                GridView gridView = (GridView) getView().findViewById(R.id.grid_movies);
+                gridView.setAdapter(new ImageAdapter(getContext(), displayedMovieList));
+            }
         }
+    }
+
+    public List<MovieInfo> getMoviesList() {
+        MovieSelection where = new MovieSelection();
+        MovieCursor movieCursor = where.query(getContext());
+        List<MovieInfo> list = new ArrayList<>();
+        while (movieCursor.moveToNext()) {
+            MovieInfo info = new MovieInfo();
+            info.title = movieCursor.getTitle();
+            info.posterURL = movieCursor.getPosterurl();
+            info.release_date = movieCursor.getReleaseDate();
+            info.duration = movieCursor.getDuration();
+            info.rating = movieCursor.getRating();
+            info.plot = movieCursor.getPlot();
+            info.ID = Integer.parseInt(movieCursor.getMovieid());
+
+            list.add(info);
+        }
+        return list;
     }
 }

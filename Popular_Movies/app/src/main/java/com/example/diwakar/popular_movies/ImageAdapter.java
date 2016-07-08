@@ -8,25 +8,24 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 /**
  * Created by diwakar on 7/3/16.
  */
 public class ImageAdapter extends BaseAdapter {
-    String BASE_URL = "http://image.tmdb.org/t/p/w185/";
     private Context context;
-    private MovieParser movieParser;
-    private int widhtOfPoster = 0;
-    private int heightOfPoster = 0;
+    List<MovieInfo> movieInfoList;
 
     // Constructor
-    public ImageAdapter(Context context, MovieParser movieParser) {
+    public ImageAdapter(Context context, List<MovieInfo> movieInfoList) {
         this.context = context;
-        this.movieParser = movieParser;
+        this.movieInfoList = movieInfoList;
     }
 
     @Override
     public int getCount() {
-        return movieParser.movieCount();
+        return movieInfoList.size();
     }
 
     @Override
@@ -39,24 +38,24 @@ public class ImageAdapter extends BaseAdapter {
         return 0;
     }
 
+    public void addAll(List<MovieInfo> list) {
+        this.movieInfoList = list;
+        notifyDataSetChanged();
+    }
+
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final ImageView imageView;
 
-        String url = movieParser.getMoviePosterURL(position);
-
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
             imageView = new ImageView(context);
-            //imageView.setLayoutParams(new GridView.LayoutParams(185, 277));
-            // imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            // imageView.setPadding(0, 0, 0, 0);
             imageView.setAdjustViewBounds(true);
         } else {
             imageView = (ImageView) convertView;
         }
 
-        Picasso.with(context).load(BASE_URL + url)
+        Picasso.with(context).load(movieInfoList.get(position).posterURL)
                 //.resize(185, 277)
                 .into(imageView);
         return imageView;
